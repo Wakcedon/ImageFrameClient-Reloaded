@@ -1,0 +1,10 @@
+{
+  "text.autoconfig.imageframeclient.title": "ImageFrame Client Settings",
+  "text.autoconfig.imageframeclient.option.useNativeResMapImages": "Use Native Resolution and Full Color Map Images",
+  "text.autoconfig.imageframeclient.option.useNativeResMapImages.@Tooltip": "Use native resolution and full color map images sent from the server.",
+  "text.autoconfig.imageframeclient.option.previewMapsInTooltip": "Preview Maps In Tooltip",
+  "text.autoconfig.imageframeclient.option.previewMapsInTooltip.@Tooltip": "Preview maps when you hover over them in your inventory.",
+  "text.autoconfig.imageframeclient.option.notifyWhenServerSupports": "Notify when Server Supports ImageFrame Client",
+  "text.autoconfig.imageframeclient.option.notifyWhenServerSupports.@Tooltip": "Show a message in chat when you join a server if they support ImageFrame client.",
+  "message.server_supported": "This server has ImageFrame and will show images in native resolution and full color!"
+}

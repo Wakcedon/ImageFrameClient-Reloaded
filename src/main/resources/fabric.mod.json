@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "imageframeclient",
+  "version": "${version}",
+  "name": "ImageFrame Client",
+  "description": "Complementary client mod for servers with ImageFrame to display HD and full color images!",
+  "authors": [
+    "LOOHP"
+  ],
+  "license": "CC0-1.0",
+  "icon": "assets/imageframeclient/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.loohp.imageframe.ImageFrameClient"
+    ],
+    "modmenu": [
+      "com.loohp.imageframe.modmenu.ImageFrameClientModMenuApiImpl"
+    ]
+  },
+  "mixins": [
+    "imageframeclient.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "fabric": "*",
+    "minecraft": "~1.21",
+    "java": ">=21"
+  }
+}
