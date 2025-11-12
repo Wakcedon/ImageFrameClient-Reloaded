@@ -4,7 +4,7 @@
   "imageframeclient.midnightconfig.useNativeResMapImages.tooltip": "Use native resolution and full color map images sent from the server.",
   "imageframeclient.midnightconfig.maxImageSize": "Maximum Resolution for Images",
   "imageframeclient.midnightconfig.maxImageSize.tooltip": "The maximum pixels a map can have on each side.",
-  "imageframeclient.midnightconfig.previewMapsInTooltip": "Preview Maps In Tooltip",
+  "imageframeclient.midnightconfig.previewMapsInTooltip": "Preview Maps in Tooltip",
   "imageframeclient.midnightconfig.previewMapsInTooltip.tooltip": "Preview maps when you hover over them in your inventory.",
   "imageframeclient.midnightconfig.notifyWhenServerSupports": "Notify when Server Supports ImageFrame Client",
   "imageframeclient.midnightconfig.notifyWhenServerSupports.tooltip": "Show a toast message when you join a server if they support ImageFrame client.",
