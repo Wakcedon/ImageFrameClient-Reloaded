@@ -1,6 +1,7 @@
 package com.loohp.imageframe.mixin;
 
 import com.loohp.imageframe.ImageFrameClient;
+import com.loohp.imageframe.configuration.Configuration;
 import net.minecraft.client.render.MapRenderState;
 import net.minecraft.client.render.MapRenderer;
 import net.minecraft.component.type.MapIdComponent;
@@ -16,7 +17,7 @@ public class MapRendererMixin {
 
     @Inject(at = @At("TAIL"), method = "update")
     public void update(MapIdComponent mapId, MapState mapState, MapRenderState renderState, CallbackInfo ci) {
-        if (!ImageFrameClient.MOD.getConfig().useNativeResMapImages()) {
+        if (!Configuration.useNativeResMapImages) {
             return;
         }
         if (renderState.texture == null) {

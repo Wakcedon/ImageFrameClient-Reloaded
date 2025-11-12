@@ -4,12 +4,10 @@
   "version": "${version}",
   "name": "ImageFrame Client",
   "description": "Complementary client mod for servers with ImageFrame to display HD and full color images!",
-  "authors": [
-    "LOOHP"
-  ],
-  "license": "CC0-1.0",
+  "authors": ["LOOHP"],
+  "license": "GPL-3.0",
   "icon": "assets/imageframeclient/icon.png",
-  "environment": "*",
+  "environment": "client",
   "entrypoints": {
     "main": [
       "com.loohp.imageframe.ImageFrameClient"
@@ -26,5 +24,18 @@
     "fabric": "*",
     "minecraft": "~1.21",
     "java": ">=21"
+  },
+  "contact": {
+    "homepage": "https://modrinth.com/mod/imageframeclient",
+    "issues": "https://loohpjames.com/dev-discord",
+    "sources": "https://github.com/LOOHP/ImageFrameClient"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://loohpjames.com/dev-discord",
+        "modmenu.website": "https://modrinth.com/mod/imageframeclient"
+      }
+    }
   }
 }

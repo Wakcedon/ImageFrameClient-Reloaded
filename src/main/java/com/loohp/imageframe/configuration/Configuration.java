@@ -1,42 +1,27 @@
 package com.loohp.imageframe.configuration;
 
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import com.loohp.imageframe.ImageFrameClient;
+import com.loohp.imageframe.object.Resolution;
+import eu.midnightdust.lib.config.MidnightConfig;
 
-@Config(name = "imageframeclient")
-public class Configuration implements ConfigData {
-    
-    @ConfigEntry.Gui.Tooltip
-    boolean useNativeResMapImages = true;
+public class Configuration extends MidnightConfig {
 
-    @ConfigEntry.Gui.Tooltip
-    boolean previewMapsInTooltip = true;
+    @Entry
+    public static boolean useNativeResMapImages = true;
 
-    @ConfigEntry.Gui.Tooltip
-    boolean notifyWhenServerSupports = true;
+    @Entry
+    public static Resolution maxImageSize = Resolution.NATIVE;
 
-    public boolean useNativeResMapImages() {
-        return useNativeResMapImages;
+    @Entry
+    public static boolean previewMapsInTooltip = true;
+
+    @Entry
+    public static boolean notifyWhenServerSupports = true;
+
+    @Override
+    public void writeChanges() {
+        ImageFrameClient.MOD.clearLoadedHdMaps();
+        super.writeChanges();
     }
 
-    public void setUseNativeResMapImages(boolean useNativeResMapImages) {
-        this.useNativeResMapImages = useNativeResMapImages;
-    }
-
-    public boolean previewMapsInTooltip() {
-        return previewMapsInTooltip;
-    }
-
-    public void setPreviewMapsInTooltip(boolean previewMapsInTooltip) {
-        this.previewMapsInTooltip = previewMapsInTooltip;
-    }
-
-    public boolean doNotifyWhenServerSupports() {
-        return notifyWhenServerSupports;
-    }
-
-    public void setNotifyWhenServerSupports(boolean notifyWhenServerSupports) {
-        this.notifyWhenServerSupports = notifyWhenServerSupports;
-    }
 }

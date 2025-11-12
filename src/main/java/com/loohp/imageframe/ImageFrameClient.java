@@ -13,11 +13,10 @@ import com.loohp.imageframe.payload.ClientboundImageUpdatedSignal;
 import com.loohp.imageframe.payload.ServerboundAcknowledgement;
 import com.loohp.imageframe.payload.ServerboundHdImageRequest;
 import com.loohp.imageframe.payload.ServerboundImageMapDetailsRequest;
+import eu.midnightdust.lib.config.MidnightConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -25,6 +24,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.toast.SystemToast;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -50,7 +50,7 @@ public class ImageFrameClient implements ModInitializer {
     public void onInitialize() {
         MOD = this;
         LOGGER.info("Hello world from ImageFrame Client!");
-        AutoConfig.register(Configuration.class, GsonConfigSerializer::new);
+        MidnightConfig.init("imageframeclient", Configuration.class);
 
         PayloadTypeRegistry.playS2C().register(ClientboundAcknowledgement.ID, ClientboundAcknowledgement.CODEC);
         PayloadTypeRegistry.playC2S().register(ServerboundAcknowledgement.ID, ServerboundAcknowledgement.CODEC);
@@ -68,13 +68,20 @@ public class ImageFrameClient implements ModInitializer {
             ServerboundAcknowledgement reply = new ServerboundAcknowledgement(payload.id());
             ClientPlayNetworking.send(reply);
             currentServerSupported.set(true);
-            if (getConfig().doNotifyWhenServerSupports()) {
-                MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.translatable("message.server_supported").formatted(Formatting.GOLD));
+            if (Configuration.notifyWhenServerSupports) {
+                MinecraftClient.getInstance().getToastManager().add(
+                        SystemToast.create(
+                                MinecraftClient.getInstance(),
+                                SystemToast.Type.UNSECURE_SERVER_WARNING,
+                                Text.translatable("message.server_supported.title").formatted(Formatting.GOLD),
+                                Text.translatable("message.server_supported.description")
+                        )
+                );
             }
         });
 
         ClientPlayNetworking.registerGlobalReceiver(ClientboundHdImageResponse.ID, (payload, context) -> {
-            if (getConfig().useNativeResMapImages()) {
+            if (Configuration.useNativeResMapImages) {
                 try {
                     int mapId = payload.mapId();
                     if (payload.requestAccepted()) {
@@ -86,7 +93,7 @@ public class ImageFrameClient implements ModInitializer {
                             pendingMultipart.put(opt.get(), info);
                         } else {
                             if (data.length > 0) {
-                                NativeImage nativeImage = NativeImage.read(data);
+                                NativeImage nativeImage = resizeToPreference(NativeImage.read(data));
                                 Identifier id = Identifier.of("imageframe", "hdmap_" + mapId);
                                 NativeImageBackedTexture tex = new NativeImageBackedTexture(id::getPath, nativeImage);
                                 tex.setFilter(false, false);
@@ -103,7 +110,7 @@ public class ImageFrameClient implements ModInitializer {
             }
         });
         ClientPlayNetworking.registerGlobalReceiver(ClientboundHdImageMultipartResponse.ID, (payload, context) -> {
-            if (getConfig().useNativeResMapImages()) {
+            if (Configuration.useNativeResMapImages) {
                 try {
                     int mapId = payload.mapId();
                     int multipartId = payload.multipart();
@@ -119,7 +126,7 @@ public class ImageFrameClient implements ModInitializer {
                         }
                         if (info.isCompleted()) {
                             pendingMultipart.invalidate(multipartId);
-                            NativeImage nativeImage = NativeImage.read(info.complete());
+                            NativeImage nativeImage = resizeToPreference(NativeImage.read(info.complete()));
                             Identifier id = Identifier.of("imageframe", "hdmap_" + mapId);
                             NativeImageBackedTexture tex = new NativeImageBackedTexture(id::getPath, nativeImage);
                             tex.setFilter(false, false);
@@ -163,8 +170,14 @@ public class ImageFrameClient implements ModInitializer {
         });
     }
 
-    public Configuration getConfig() {
-        return AutoConfig.getConfigHolder(Configuration.class).getConfig();
+    public NativeImage resizeToPreference(NativeImage src) {
+        int size = Configuration.maxImageSize.getMaxSize();
+        if (src.getWidth() <= size) {
+            return src;
+        }
+        NativeImage dst = new NativeImage(size, size, false);
+        src.resizeSubRectTo(0, 0, src.getWidth(), src.getHeight(), dst);
+        return dst;
     }
 
     @SuppressWarnings("OptionalAssignedToNull")
@@ -179,6 +192,10 @@ public class ImageFrameClient implements ModInitializer {
             return null;
         }
         return result.orElse(null);
+    }
+
+    public void clearLoadedHdMaps() {
+        loadedHdImages.clear();
     }
 
     @SuppressWarnings("OptionalAssignedToNull")
