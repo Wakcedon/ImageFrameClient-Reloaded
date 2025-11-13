@@ -1,13 +1,14 @@
-# ImageFrameClient
+# ImageFrame Client
 
 https://modrinth.com/mod/imageframeclient
+https://www.curseforge.com/minecraft/mc-mods/imageframeclient
 
 Complementary client mod for servers with [ImageFrame](https://github.com/LOOHP/ImageFrame) to display HD and full color images!
 
 More information (screenshots) about the mod can be found on the Modrinth page linked above.
 
 ## Built against Fabric
-Built against [Fabric](https://fabricmc.net/).
+Built against [Fabric](https://fabricmc.net/) and works with [Quilt](https://quiltmc.org/) as well.
 
 ## Partnerships
 
