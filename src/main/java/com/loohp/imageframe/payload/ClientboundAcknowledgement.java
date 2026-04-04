@@ -1,21 +1,21 @@
 package com.loohp.imageframe.payload;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public record ClientboundAcknowledgement(long id) implements CustomPayload {
+public record ClientboundAcknowledgement(long id) implements CustomPacketPayload {
 
-    public static final Id<ClientboundAcknowledgement> ID = new Id<>(Identifier.of("imageframe", "clientbound_ack"));
+    public static final Type<ClientboundAcknowledgement> ID = new Type<>(Identifier.fromNamespaceAndPath("imageframe", "clientbound_ack"));
 
-    public static final PacketCodec<RegistryByteBuf, ClientboundAcknowledgement> CODEC = PacketCodec.tuple(
-            PacketCodecs.LONG, ClientboundAcknowledgement::id,
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAcknowledgement> CODEC = StreamCodec.composite(
+            ByteBufCodecs.LONG, ClientboundAcknowledgement::id,
             ClientboundAcknowledgement::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() { return ID; }
+    public Type<? extends CustomPacketPayload> type() { return ID; }
 
 }

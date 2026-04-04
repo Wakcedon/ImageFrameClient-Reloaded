@@ -13,6 +13,7 @@ import com.loohp.imageframe.payload.ClientboundImageUpdatedSignal;
 import com.loohp.imageframe.payload.ServerboundAcknowledgement;
 import com.loohp.imageframe.payload.ServerboundHdImageRequest;
 import com.loohp.imageframe.payload.ServerboundImageMapDetailsRequest;
+import com.mojang.blaze3d.platform.NativeImage;
 import eu.midnightdust.lib.config.MidnightConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -21,13 +22,12 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.toast.SystemToast;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,29 +52,29 @@ public class ImageFrameClient implements ModInitializer {
         LOGGER.info("Hello world from ImageFrame Client!");
         MidnightConfig.init("imageframeclient", Configuration.class);
 
-        PayloadTypeRegistry.playS2C().register(ClientboundAcknowledgement.ID, ClientboundAcknowledgement.CODEC);
-        PayloadTypeRegistry.playC2S().register(ServerboundAcknowledgement.ID, ServerboundAcknowledgement.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundAcknowledgement.ID, ClientboundAcknowledgement.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundAcknowledgement.ID, ServerboundAcknowledgement.CODEC);
 
-        PayloadTypeRegistry.playC2S().register(ServerboundHdImageRequest.ID, ServerboundHdImageRequest.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundHdImageResponse.ID, ClientboundHdImageResponse.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundHdImageMultipartResponse.ID, ClientboundHdImageMultipartResponse.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundHdImageRequest.ID, ServerboundHdImageRequest.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundHdImageResponse.ID, ClientboundHdImageResponse.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundHdImageMultipartResponse.ID, ClientboundHdImageMultipartResponse.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(ClientboundImageUpdatedSignal.ID, ClientboundImageUpdatedSignal.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundImageUpdatedSignal.ID, ClientboundImageUpdatedSignal.CODEC);
 
-        PayloadTypeRegistry.playC2S().register(ServerboundImageMapDetailsRequest.ID, ServerboundImageMapDetailsRequest.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundImageMapDetailsResponse.ID, ClientboundImageMapDetailsResponse.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundImageMapDetailsRequest.ID, ServerboundImageMapDetailsRequest.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundImageMapDetailsResponse.ID, ClientboundImageMapDetailsResponse.CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(ClientboundAcknowledgement.ID, (payload, context) -> {
             ServerboundAcknowledgement reply = new ServerboundAcknowledgement(payload.id());
             ClientPlayNetworking.send(reply);
             currentServerSupported.set(true);
             if (Configuration.notifyWhenServerSupports) {
-                MinecraftClient.getInstance().getToastManager().add(
-                        SystemToast.create(
-                                MinecraftClient.getInstance(),
-                                SystemToast.Type.UNSECURE_SERVER_WARNING,
-                                Text.translatable("imageframeclient.message.server_supported.title").formatted(Formatting.GOLD),
-                                Text.translatable("imageframeclient.message.server_supported.description")
+                Minecraft.getInstance().getToastManager().addToast(
+                        SystemToast.multiline(
+                                Minecraft.getInstance(),
+                                SystemToast.SystemToastId.UNSECURE_SERVER_WARNING,
+                                Component.translatable("imageframeclient.message.server_supported.title").withStyle(ChatFormatting.GOLD),
+                                Component.translatable("imageframeclient.message.server_supported.description")
                         )
                 );
             }
@@ -94,10 +94,9 @@ public class ImageFrameClient implements ModInitializer {
                         } else {
                             if (data.length > 0) {
                                 NativeImage nativeImage = resizeToPreference(NativeImage.read(data));
-                                Identifier id = Identifier.of("imageframe", "hdmap_" + mapId);
-                                NativeImageBackedTexture tex = new NativeImageBackedTexture(id::getPath, nativeImage);
-                                tex.setFilter(false, false);
-                                MinecraftClient.getInstance().getTextureManager().registerTexture(id, tex);
+                                Identifier id = Identifier.fromNamespaceAndPath("imageframe", "hdmap_" + mapId);
+                                DynamicTexture tex = new DynamicTexture(id::getPath, nativeImage);
+                                Minecraft.getInstance().getTextureManager().register(id, tex);
                                 loadedHdImages.put(mapId, Optional.of(id));
                             }
                         }
@@ -127,10 +126,9 @@ public class ImageFrameClient implements ModInitializer {
                         if (info.isCompleted()) {
                             pendingMultipart.invalidate(multipartId);
                             NativeImage nativeImage = resizeToPreference(NativeImage.read(info.complete()));
-                            Identifier id = Identifier.of("imageframe", "hdmap_" + mapId);
-                            NativeImageBackedTexture tex = new NativeImageBackedTexture(id::getPath, nativeImage);
-                            tex.setFilter(false, false);
-                            MinecraftClient.getInstance().getTextureManager().registerTexture(id, tex);
+                            Identifier id = Identifier.fromNamespaceAndPath("imageframe", "hdmap_" + mapId);
+                            DynamicTexture tex = new DynamicTexture(id::getPath, nativeImage);
+                            Minecraft.getInstance().getTextureManager().register(id, tex);
                             loadedHdImages.put(mapId, Optional.of(id));
                         }
                     }
@@ -147,7 +145,7 @@ public class ImageFrameClient implements ModInitializer {
             for (int mapId : payload.mapIds()) {
                 Optional<Identifier> id = loadedHdImages.remove(mapId);
                 if (id != null && id.isPresent()) {
-                    MinecraftClient.getInstance().getTextureManager().destroyTexture(id.get());
+                    Minecraft.getInstance().getTextureManager().release(id.get());
                 }
             }
         });
@@ -163,7 +161,7 @@ public class ImageFrameClient implements ModInitializer {
             for (int mapId : new IntOpenHashSet(loadedHdImages.keySet())) {
                 Optional<Identifier> id = loadedHdImages.remove(mapId);
                 if (id != null && id.isPresent()) {
-                    MinecraftClient.getInstance().getTextureManager().destroyTexture(id.get());
+                    Minecraft.getInstance().getTextureManager().release(id.get());
                 }
             }
             currentServerSupported.set(false);

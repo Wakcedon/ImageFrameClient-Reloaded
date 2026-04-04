@@ -1,20 +1,19 @@
 package com.loohp.imageframe.mixin;
 
 import com.loohp.imageframe.configuration.Configuration;
-import com.loohp.imageframe.object.FilledMapTooltipData;
-import com.loohp.imageframe.object.ImageMapTooltipData;
-import com.loohp.imageframe.object.PaintingTooltipData;
-import net.minecraft.component.Component;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.tooltip.TooltipData;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.entry.RegistryEntry;
+import com.loohp.imageframe.object.FilledMapTooltipComponent;
+import com.loohp.imageframe.object.ImageMapTooltipComponent;
+import com.loohp.imageframe.object.PaintingTooltipComponent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,30 +28,30 @@ public class ItemMixin {
     @Unique
     private static final String KEY = "CombinedImageMap";
 
-    @Inject(at = @At("HEAD"), cancellable = true, method = "getTooltipData")
-    public void getTooltipData(ItemStack stack, CallbackInfoReturnable<Optional<TooltipData>> cir) {
+    @Inject(at = @At("HEAD"), cancellable = true, method = "getTooltipImage")
+    public void getTooltipImage(ItemStack stack, CallbackInfoReturnable<Optional<TooltipComponent>> cir) {
         Item item = stack.getItem();
         if (Configuration.previewPaintingsInTooltip && Items.PAINTING.equals(item)) {
-            Component<RegistryEntry<PaintingVariant>> paintingVariantComponent = stack.getTyped(DataComponentTypes.PAINTING_VARIANT);
+            Holder<PaintingVariant> paintingVariantComponent = stack.get(DataComponents.PAINTING_VARIANT);
             if (paintingVariantComponent != null) {
-                PaintingVariant paintingVariant = paintingVariantComponent.value().value();
-                cir.setReturnValue(Optional.of(new PaintingTooltipData(paintingVariant)));
+                PaintingVariant paintingVariant = paintingVariantComponent.value();
+                cir.setReturnValue(Optional.of(new PaintingTooltipComponent(paintingVariant)));
                 cir.cancel();
             }
         } else if (Configuration.previewMapsInTooltip && Items.PAPER.equals(item)) {
-            Component<NbtComponent> customDataComponent = stack.getTyped(DataComponentTypes.CUSTOM_DATA);
+            CustomData customDataComponent = stack.get(DataComponents.CUSTOM_DATA);
             if (customDataComponent != null) {
-                NbtCompound tag = customDataComponent.value().copyNbt();
+                CompoundTag tag = customDataComponent.copyTag();
                 Optional<Integer> optIndex = tag.getInt(KEY);
                 if (optIndex.isPresent()) {
-                    cir.setReturnValue(Optional.of(new ImageMapTooltipData(optIndex.get())));
+                    cir.setReturnValue(Optional.of(new ImageMapTooltipComponent(optIndex.get())));
                     cir.cancel();
                 }
             }
         } else if (Configuration.previewMapsInTooltip && Items.FILLED_MAP.equals(item)) {
-            Component<MapIdComponent> mapIdComponent = stack.getTyped(DataComponentTypes.MAP_ID);
+            MapId mapIdComponent = stack.get(DataComponents.MAP_ID);
             if (mapIdComponent != null) {
-                cir.setReturnValue(Optional.of(new FilledMapTooltipData(mapIdComponent.value().id())));
+                cir.setReturnValue(Optional.of(new FilledMapTooltipComponent(mapIdComponent.id())));
                 cir.cancel();
             }
         }

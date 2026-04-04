@@ -1,21 +1,21 @@
 package com.loohp.imageframe.payload;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public record ServerboundImageMapDetailsRequest(int index) implements CustomPayload {
+public record ServerboundImageMapDetailsRequest(int index) implements CustomPacketPayload {
 
-    public static final Id<ServerboundImageMapDetailsRequest> ID = new Id<>(Identifier.of("imageframe", "serverbound_imagemap_details"));
+    public static final Type<ServerboundImageMapDetailsRequest> ID = new Type<>(Identifier.fromNamespaceAndPath("imageframe", "serverbound_imagemap_details"));
 
-    public static final PacketCodec<RegistryByteBuf, ServerboundImageMapDetailsRequest> CODEC = PacketCodec.tuple(
-            PacketCodecs.INTEGER, ServerboundImageMapDetailsRequest::index,
+    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundImageMapDetailsRequest> CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT, ServerboundImageMapDetailsRequest::index,
             ServerboundImageMapDetailsRequest::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() { return ID; }
+    public Type<? extends CustomPacketPayload> type() { return ID; }
 
 }

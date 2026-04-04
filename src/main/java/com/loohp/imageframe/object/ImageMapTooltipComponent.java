@@ -1,16 +1,16 @@
 package com.loohp.imageframe.object;
 
 import com.loohp.imageframe.ImageFrameClient;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.MapRenderState;
-import net.minecraft.client.render.MapRenderer;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.item.map.MapState;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.MapRenderer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.MapRenderState;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix3x2fStack;
 
 public class ImageMapTooltipComponent implements MapTooltipComponent {
@@ -18,7 +18,7 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
     private final float BG_INSET = 1F;
     private final float PAD_PX = 2F;
 
-    private final Identifier background = Identifier.of("textures/map/map_background.png");
+    private final Identifier background = Identifier.withDefaultNamespace("textures/map/map_background.png");
     private final MapRenderState mapRenderState;
     private final int index;
 
@@ -28,12 +28,12 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
     }
 
     @Override
-    public int getHeight(TextRenderer textRenderer) {
+    public int getHeight(Font font) {
         return ImageFrameClient.MOD.getOrRequestImageMapData(index) == null ? 0 : 66;
     }
 
     @Override
-    public int getWidth(TextRenderer textRenderer) {
+    public int getWidth(Font font) {
         ImageMapData data = ImageFrameClient.MOD.getOrRequestImageMapData(index);
         if (data == null) {
             return 0;
@@ -54,10 +54,10 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
     }
 
     @Override
-    public void drawItems(TextRenderer textRenderer, int x, int y, int width, int height, DrawContext context) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        ClientWorld world = client.world;
-        if (world == null) {
+    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+        Minecraft client = Minecraft.getInstance();
+        ClientLevel level = client.level;
+        if (level == null) {
             return;
         }
         ImageMapData imageMapData = ImageFrameClient.MOD.getOrRequestImageMapData(index);
@@ -71,7 +71,7 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
         int tileSizePxInt = Math.max(1, (int) Math.floor(usableH / gridRows));
         // Background width that matches our layout
         int mapWidth = getWidth(imageMapData);
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, background, x, y, 0, 0, mapWidth, 64, mapWidth, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, background, x, y, 0, 0, mapWidth, 64, mapWidth, 64);
         // Grid dimensions for centering (NO overlap involved)
         float gridW = gridCols * tileSizePxInt + PAD_PX * 2f;
         float gridH = gridRows * tileSizePxInt + PAD_PX * 2f;
@@ -82,16 +82,16 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
         float overlap = 0.25f; // adjust 0.2–0.5 if needed
         float tileScale = (tileSizePxInt + overlap) / 128f;
         MapRenderer mapRenderer = client.getMapRenderer();
-        Matrix3x2fStack matrix = context.getMatrices();
+        Matrix3x2fStack matrix = graphics.pose();
         for (int i = 0; i < imageMapData.mapIds().size(); i++) {
-            MapIdComponent id = new MapIdComponent(imageMapData.mapIds().getInt(i));
+            MapId id = new MapId(imageMapData.mapIds().getInt(i));
             int col = i % gridCols;
             int row = i / gridCols;
-            MapState data = world.getMapState(id);
+            MapItemSavedData data = level.getMapData(id);
             if (data == null) {
                 continue;
             }
-            mapRenderer.update(id, data, mapRenderState);
+            mapRenderer.extractRenderState(id, data, mapRenderState);
             // Integer stride + constant device-px padding
             float drawX = originX + PAD_PX + col * tileSizePxInt;
             float drawY = originY + PAD_PX + row * tileSizePxInt;
@@ -100,7 +100,7 @@ public class ImageMapTooltipComponent implements MapTooltipComponent {
             // Apply overlap symmetrically so it doesn't “eat” the padding
             matrix.translate(-overlap * 0.5f, -overlap * 0.5f);
             matrix.scale(tileScale, tileScale);
-            context.drawMap(mapRenderState);
+            graphics.map(mapRenderState);
             matrix.popMatrix();
         }
     }

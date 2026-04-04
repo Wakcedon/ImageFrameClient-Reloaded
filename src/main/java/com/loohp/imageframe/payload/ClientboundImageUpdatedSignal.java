@@ -2,23 +2,23 @@ package com.loohp.imageframe.payload;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public record ClientboundImageUpdatedSignal(IntSet indexes, IntSet mapIds) implements CustomPayload {
+public record ClientboundImageUpdatedSignal(IntSet indexes, IntSet mapIds) implements CustomPacketPayload {
 
-    public static final Id<ClientboundImageUpdatedSignal> ID = new Id<>(Identifier.of("imageframe", "clientbound_update"));
+    public static final Type<ClientboundImageUpdatedSignal> ID = new Type<>(Identifier.fromNamespaceAndPath("imageframe", "clientbound_update"));
 
-    public static final PacketCodec<RegistryByteBuf, ClientboundImageUpdatedSignal> CODEC = PacketCodec.tuple(
-            PacketCodecs.collection(IntOpenHashSet::new, PacketCodecs.INTEGER), ClientboundImageUpdatedSignal::indexes,
-            PacketCodecs.collection(IntOpenHashSet::new, PacketCodecs.INTEGER), ClientboundImageUpdatedSignal::mapIds,
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundImageUpdatedSignal> CODEC = StreamCodec.composite(
+            ByteBufCodecs.collection(IntOpenHashSet::new, ByteBufCodecs.INT), ClientboundImageUpdatedSignal::indexes,
+            ByteBufCodecs.collection(IntOpenHashSet::new, ByteBufCodecs.INT), ClientboundImageUpdatedSignal::mapIds,
             ClientboundImageUpdatedSignal::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() { return ID; }
+    public Type<? extends CustomPacketPayload> type() { return ID; }
 
 }

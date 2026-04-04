@@ -10,8 +10,8 @@
     "requireAnnotations": true
   },
   "client": [
-    "MapRendererMixin",
-    "TooltipComponentMixin",
-    "ItemMixin"
+    "ClientTooltipComponentMixin",
+    "ItemMixin",
+    "MapRendererMixin"
   ]
 }
