@@ -18,6 +18,8 @@ import eu.midnightdust.lib.config.MidnightConfig;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -44,7 +46,7 @@ public class ImageFrameClient implements ModInitializer {
     private final AtomicBoolean currentServerSupported = new AtomicBoolean(false);
     private final Int2ObjectMap<Optional<Identifier>> loadedHdImages = new Int2ObjectOpenHashMap<>();
     private final Int2ObjectMap<Optional<ImageMapData>> imageMapData = new Int2ObjectOpenHashMap<>();
-    private final Cache<Integer, MultipartHdMapInfo> pendingMultipart = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+    private final Cache<Integer, MultipartHdMapInfo> pendingMultipart = CacheBuilder.newBuilder().expireAfterAccess(Duration.of(10, ChronoUnit.SECONDS)).build();
 
     @Override
     public void onInitialize() {
@@ -69,13 +71,11 @@ public class ImageFrameClient implements ModInitializer {
             ClientPlayNetworking.send(reply);
             currentServerSupported.set(true);
             if (Configuration.notifyWhenServerSupports) {
-                Minecraft.getInstance().getToastManager().addToast(
-                        SystemToast.multiline(
-                                Minecraft.getInstance(),
-                                SystemToast.SystemToastId.UNSECURE_SERVER_WARNING,
-                                Component.translatable("imageframeclient.message.server_supported.title").withStyle(ChatFormatting.GOLD),
-                                Component.translatable("imageframeclient.message.server_supported.description")
-                        )
+                SystemToast.add(
+                        Minecraft.getInstance().gui.toastManager(),
+                        SystemToast.SystemToastId.UNSECURE_SERVER_WARNING,
+                        Component.translatable("imageframeclient.message.server_supported.title").withStyle(ChatFormatting.GOLD),
+                        Component.translatable("imageframeclient.message.server_supported.description")
                 );
             }
         });
