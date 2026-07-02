@@ -15,7 +15,6 @@ public interface ClientTooltipComponentMixin {
     private static void create(TooltipComponent component, CallbackInfoReturnable<ClientTooltipComponent> cir) {
         if (component instanceof MapTooltipComponent mapTooltipComponent) {
             cir.setReturnValue(mapTooltipComponent);
-            cir.cancel();
         }
     }
 

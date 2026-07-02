@@ -6,13 +6,13 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record ClientboundImageMapDetailsResponse(int index, int width, int height, IntList mapIds) implements CustomPacketPayload {
 
-    public static final Type<ClientboundImageMapDetailsResponse> ID = new Type<>(Identifier.fromNamespaceAndPath("imageframe", "clientbound_imagemap_details"));
+    public static final Type<ClientboundImageMapDetailsResponse> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("imageframe", "clientbound_imagemap_details"));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundImageMapDetailsResponse> CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundImageMapDetailsResponse> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT, ClientboundImageMapDetailsResponse::index,
             ByteBufCodecs.INT, ClientboundImageMapDetailsResponse::width,
             ByteBufCodecs.INT, ClientboundImageMapDetailsResponse::height,
@@ -21,6 +21,6 @@ public record ClientboundImageMapDetailsResponse(int index, int width, int heigh
     );
 
     @Override
-    public Type<? extends CustomPacketPayload> type() { return ID; }
+    public Type<? extends CustomPacketPayload> type() { return TYPE; }
 
 }

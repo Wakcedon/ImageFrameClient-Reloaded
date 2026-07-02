@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'net.neoforged.moddev' version '1.0.11'
     id 'maven-publish'
 }
 
@@ -7,43 +7,67 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = "${project.archives_base_name}-${project.minecraft_version}-fabric"
+    archivesName = "${project.archives_base_name}-neoforge-${project.minecraft_version}"
 }
 
 repositories {
-    maven { url "https://maven.shedaniel.me/" }
-    maven { url "https://maven.terraformersmc.com/releases/" }
-    maven { url "https://api.modrinth.com/maven" }
+    mavenCentral()
 }
 
-dependencies {
-    minecraft("com.mojang:minecraft:${project.minecraft_version}")
-    implementation("net.fabricmc:fabric-loader:${project.loader_version}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}")
-    implementation include ("maven.modrinth:midnightlib:${project.midnightlib_version}")
-    implementation("com.terraformersmc:modmenu:${project.modmenu_version}")
-}
-
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+def targetJavaVersion = 21
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        it.options.release.set(targetJavaVersion)
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.release = 25
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+    withSourcesJar()
 }
 
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+processResources {
+    var replaceProperties = [
+            mod_version: version,
+            mod_id: project.mod_id,
+            mod_name: project.mod_name,
+            mod_license: project.mod_license,
+            mod_authors: project.mod_authors,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties
+    }
+}
+
+neoForge {
+    version = project.neo_version
+    validateAccessTransformers = false
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+        }
+    }
+
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}"}
+        rename { "${it}_${project.base.archivesName.get()}" }
     }
 }
 

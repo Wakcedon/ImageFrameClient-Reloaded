@@ -2,29 +2,25 @@ package com.loohp.imageframe.object;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MapRenderer;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.MapRenderState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import org.joml.Matrix3x2fStack;
 
 public class FilledMapTooltipComponent implements MapTooltipComponent {
 
-    private final Identifier background = Identifier.withDefaultNamespace("textures/map/map_background.png");
-    private final MapId id;
-    private final MapRenderState mapRenderState;
+    private static final ResourceLocation BACKGROUND = ResourceLocation.withDefaultNamespace("textures/map/map_background.png");
+
+    private final int mapId;
 
     public FilledMapTooltipComponent(int mapId) {
-        this.id = new MapId(mapId);
-        this.mapRenderState = new MapRenderState();
+        this.mapId = mapId;
     }
 
     @Override
-    public int getHeight(Font font) {
+    public int getHeight() {
         return 66;
     }
 
@@ -34,25 +30,25 @@ public class FilledMapTooltipComponent implements MapTooltipComponent {
     }
 
     @Override
-    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, background, x, y, 0.0F, 0.0F, 64, 64, 64, 64);
+    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphics graphics) {
+        graphics.blit(BACKGROUND, x, y, 0, 0, 64, 64, 64, 64);
+
         Minecraft client = Minecraft.getInstance();
         ClientLevel level = client.level;
-        if (level == null) {
-            return;
-        }
-        MapItemSavedData data = level.getMapData(id);
-        if (data == null) {
-            return;
-        }
-        Matrix3x2fStack matrix = graphics.pose();
-        matrix.pushMatrix();
-        matrix.translate(x + 3.2F, y + 3.2F);
-        matrix.scale(0.45F, 0.45F);
-        MapRenderer mapRenderer = client.getMapRenderer();
-        mapRenderer.extractRenderState(id, data, mapRenderState);
-        graphics.map(mapRenderState);
-        matrix.popMatrix();
+        if (level == null) return;
+
+        MapItemSavedData data = level.getMapData(new MapId(mapId));
+        if (data == null) return;
+
+        MapRenderer mapRenderer = client.gameRenderer.getMapRenderer();
+        mapRenderer.render(
+                graphics.pose(),
+                graphics.bufferSource(),
+                new MapId(mapId),
+                data,
+                false,
+                0xF000F0
+        );
     }
 
 }

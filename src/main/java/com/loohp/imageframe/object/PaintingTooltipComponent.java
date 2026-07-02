@@ -1,15 +1,14 @@
 package com.loohp.imageframe.object;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.decoration.painting.PaintingVariant;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 
 public record PaintingTooltipComponent(PaintingVariant paintingVariant) implements MapTooltipComponent {
 
     @Override
-    public int getHeight(Font font) {
+    public int getHeight() {
         return shouldFillWidth() ? Math.round(getHeightToWidthRatio() * 66F) : 66;
     }
 
@@ -31,11 +30,14 @@ public record PaintingTooltipComponent(PaintingVariant paintingVariant) implemen
     }
 
     @Override
-    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor guiGraphics) {
-        Identifier painting = paintingVariant.assetId().withPrefix("textures/painting/").withSuffix(".png");
+    public void extractImage(Font font, int x, int y, int width, int height, GuiGraphics guiGraphics) {
+        ResourceLocation painting = ResourceLocation.fromNamespaceAndPath(
+                paintingVariant.assetId().getNamespace(),
+                "textures/painting/" + paintingVariant.assetId().getPath() + ".png"
+        );
         int w = shouldFillWidth() ? 64 : Math.round(getWidthToHeightRatio() * 64F);
         int h = shouldFillWidth() ? Math.round(getHeightToWidthRatio() * 64F) : 64;
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, painting, x, y, 0.0F, 0.0F, w, h, w, h);
+        guiGraphics.blit(painting, x, y, 0.0F, 0.0F, w, h, w, h);
     }
 
 }

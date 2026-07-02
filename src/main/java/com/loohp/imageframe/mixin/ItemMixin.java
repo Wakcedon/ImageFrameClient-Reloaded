@@ -3,11 +3,8 @@ package com.loohp.imageframe.mixin;
 import com.loohp.imageframe.configuration.Configuration;
 import com.loohp.imageframe.object.FilledMapTooltipComponent;
 import com.loohp.imageframe.object.ImageMapTooltipComponent;
-import com.loohp.imageframe.object.PaintingTooltipComponent;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,24 +28,17 @@ public class ItemMixin {
     @Inject(at = @At("HEAD"), cancellable = true, method = "getTooltipImage")
     public void getTooltipImage(ItemStack stack, CallbackInfoReturnable<Optional<TooltipComponent>> cir) {
         Item item = stack.getItem();
-        if (Configuration.previewPaintingsInTooltip && Items.PAINTING.equals(item)) {
-            Holder<PaintingVariant> paintingVariantComponent = stack.get(DataComponents.PAINTING_VARIANT);
-            if (paintingVariantComponent != null) {
-                PaintingVariant paintingVariant = paintingVariantComponent.value();
-                cir.setReturnValue(Optional.of(new PaintingTooltipComponent(paintingVariant)));
-                cir.cancel();
-            }
-        } else if (Configuration.previewMapsInTooltip && Items.PAPER.equals(item)) {
+        if (Configuration.PREVIEW_MAPS_IN_TOOLTIP.get() && Items.PAPER.equals(item)) {
             CustomData customDataComponent = stack.get(DataComponents.CUSTOM_DATA);
             if (customDataComponent != null) {
                 CompoundTag tag = customDataComponent.copyTag();
-                Optional<Integer> optIndex = tag.getInt(KEY);
-                if (optIndex.isPresent()) {
-                    cir.setReturnValue(Optional.of(new ImageMapTooltipComponent(optIndex.get())));
+                if (tag.contains(KEY)) {
+                    int index = tag.getInt(KEY);
+                    cir.setReturnValue(Optional.of(new ImageMapTooltipComponent(index)));
                     cir.cancel();
                 }
             }
-        } else if (Configuration.previewMapsInTooltip && Items.FILLED_MAP.equals(item)) {
+        } else if (Configuration.PREVIEW_MAPS_IN_TOOLTIP.get() && Items.FILLED_MAP.equals(item)) {
             MapId mapIdComponent = stack.get(DataComponents.MAP_ID);
             if (mapIdComponent != null) {
                 cir.setReturnValue(Optional.of(new FilledMapTooltipComponent(mapIdComponent.id())));
