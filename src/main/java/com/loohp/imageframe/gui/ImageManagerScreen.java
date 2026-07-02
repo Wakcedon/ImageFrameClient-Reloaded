@@ -5,6 +5,7 @@ import com.loohp.imageframe.payload.ImageInfo;
 import com.loohp.imageframe.payload.ServerboundImageDelete;
 import com.loohp.imageframe.payload.ServerboundImageListRequest;
 import com.loohp.imageframe.payload.ServerboundImageUpload;
+import com.loohp.imageframe.util.ImageCache;
 import com.loohp.imageframe.util.ImageUtil;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
@@ -33,16 +34,19 @@ public class ImageManagerScreen extends Screen {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("imageframe-gui");
     private static final int LIST_WIDTH_RATIO = 40;
+    private static final long TIMEOUT_MS = 5000;
 
     private List<ImageInfo> images = List.of();
     private int selectedIndex = -1;
     private int scrollOffset = 0;
     private boolean loading = true;
     private String statusMessage = "";
+    private long lastRequestTime;
 
     private Button uploadBtn;
     private Button deleteBtn;
     private Button refreshBtn;
+    private Button clearCacheBtn;
     private EditBox widthInput;
     private EditBox heightInput;
 
@@ -71,17 +75,25 @@ public class ImageManagerScreen extends Screen {
                 btn -> refreshList()
         ).bounds(150, btnY, 60, 20).build());
 
+        clearCacheBtn = addRenderableWidget(Button.builder(
+                Component.literal("Clear Cache"),
+                btn -> {
+                    ImageCache.clearCache();
+                    setStatus("Cache cleared");
+                }
+        ).bounds(215, btnY, 70, 20).build());
+
         addRenderableWidget(Button.builder(
                 Component.translatable("imageframeclient.gui.close"),
                 btn -> onClose()
         ).bounds(width - 70, btnY, 60, 20).build());
 
-        widthInput = addRenderableWidget(new EditBox(font, 250, btnY, 40, 20,
+        widthInput = addRenderableWidget(new EditBox(font, 290, btnY, 40, 20,
                 Component.translatable("imageframeclient.gui.width")));
         widthInput.setValue("1");
         widthInput.setFilter(s -> s.matches("\\d*") && (!s.isEmpty() && Integer.parseInt(s) <= 256));
 
-        heightInput = addRenderableWidget(new EditBox(font, 300, btnY, 40, 20,
+        heightInput = addRenderableWidget(new EditBox(font, 340, btnY, 40, 20,
                 Component.translatable("imageframeclient.gui.height")));
         heightInput.setValue("1");
         heightInput.setFilter(s -> s.matches("\\d*") && (!s.isEmpty() && Integer.parseInt(s) <= 256));
@@ -113,7 +125,7 @@ public class ImageManagerScreen extends Screen {
         }
 
         graphics.drawCenteredString(font, title, width / 2, 5, 0xFFFFFF);
-        graphics.drawString(font, Component.translatable("imageframeclient.gui.tiles_label"), 195, btnLabelY(), 0xAAAAAA);
+        graphics.drawString(font, Component.translatable("imageframeclient.gui.tiles_label"), 235, btnLabelY(), 0xAAAAAA);
 
         super.render(graphics, mouseX, mouseY, delta);
     }
@@ -196,6 +208,7 @@ public class ImageManagerScreen extends Screen {
         selectedIndex = -1;
         images = List.of();
         ClientPayloadHandler.pendingImageList = null;
+        lastRequestTime = System.currentTimeMillis();
         PacketDistributor.sendToServer(new ServerboundImageListRequest());
     }
 
@@ -267,6 +280,11 @@ public class ImageManagerScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        if (loading && lastRequestTime > 0 && System.currentTimeMillis() - lastRequestTime > TIMEOUT_MS) {
+            loading = false;
+            statusMessage = "Server did not respond. Is ImageFrame installed?";
+            lastRequestTime = 0;
+        }
         List<ImageInfo> pending = ClientPayloadHandler.pendingImageList;
         if (pending != null) {
             images = pending;
@@ -274,6 +292,7 @@ public class ImageManagerScreen extends Screen {
             statusMessage = "";
             selectedIndex = Math.min(selectedIndex, images.size() - 1);
             ClientPayloadHandler.pendingImageList = null;
+            lastRequestTime = 0;
         }
     }
 

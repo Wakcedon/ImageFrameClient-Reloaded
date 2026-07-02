@@ -7,7 +7,7 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = "${project.archives_base_name}-neoforge-${project.minecraft_version}"
+    archivesName = "${project.archives_base_name}"
 }
 
 repositories {
@@ -27,7 +27,7 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
-    withSourcesJar()
+    // single jar output
 }
 
 processResources {

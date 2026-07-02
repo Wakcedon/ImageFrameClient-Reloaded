@@ -107,9 +107,23 @@ public class ImageFrameClient {
 
     private void registerClientCommands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(net.minecraft.commands.Commands.literal("ifc").executes(ctx -> {
-            Minecraft.getInstance().setScreen(new com.loohp.imageframe.gui.ImageManagerScreen());
+            var mc = Minecraft.getInstance();
+            if (mc.level == null) {
+                ctx.getSource().sendFailure(Component.literal("Join a server first!"));
+                return 0;
+            }
+            if (!currentServerSupported.get()) {
+                ctx.getSource().sendFailure(Component.literal(
+                        "This server does not have the ImageFrame plugin."));
+                return 0;
+            }
+            mc.setScreen(new com.loohp.imageframe.gui.ImageManagerScreen());
             return 1;
         }));
+    }
+
+    public boolean isCurrentServerSupported() {
+        return currentServerSupported.get();
     }
 
     public void onServerAcknowledged(ClientboundAcknowledgement payload) {

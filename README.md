@@ -1,92 +1,63 @@
-# ImageFrame Client Reloaded
+# 🗺️ ImageFrame Client Reloaded
 
-https://modrinth.com/mod/imageframeclient-reloaded
+**Turn your Minecraft maps into art.** This mod lets you see HD, full-color images on maps exactly as they were meant to look — no more blurry 16-color pixel art.
 
-A NeoForge client-side mod complementary to servers running the [ImageFrame](https://github.com/LOOHP/ImageFrame) plugin. Originally created by LOOHP for Fabric, this fork ports the mod to **NeoForge 1.21.1** with additional features and ongoing development.
-
-> **The server must have the [ImageFrame](https://www.spigotmc.org/resources/106031/) plugin installed.** This mod works on both client and server — the client displays HD images and provides a management GUI, while the optional server component stores uploaded images for use with ImageFrame.
+Play on a server with the [ImageFrame](https://github.com/LOOHP/ImageFrame) plugin? Every map, painting, and image wall will render in crisp native resolution with true colors. You can even upload your own pictures straight from the game using `/ifc`.
 
 ---
 
-## Features
+## ✨ What You Get
 
-### HD Native Resolution Map Rendering
-When the server sends full-color, high-resolution map data, the mod replaces the vanilla 128×128, 16-color map texture with the actual image at its native resolution. Works in item frames, on map walls, in hands — everywhere maps are rendered.
+**🎨 HD Maps — For Real This Time**
+Vanilla maps cap out at 128×128 and 16 colors. ImageFrame maps display in **full RGB** at the image's original resolution. Every pixel, every shade. Works in item frames, on map walls, in your hand — everywhere.
 
-### Inventory Tooltip Previews
-- **Filled Maps** — See a live 64×64 preview of any filled map in your inventory.
-- **Image Maps** — For ImageFrame's multi-tile image items (paper with `CombinedImageMap` data), renders the full grid of map tiles in the tooltip at the correct scale.
-- **Paintings** — Preview a painting's artwork before placing it.
+**🖼️ Tooltip Previews**
+Hover over a filled map in your inventory — you'll see its actual content right in the tooltip. Same for ImageFrame multi-tile images and paintings.
 
-### Image Manager GUI (`/ifc`)
-Opens a graphical interface for managing server images directly in-game:
-- **Browse** — View all uploaded images with names and file sizes.
-- **Upload** — Select a local PNG/JPG file via system file dialog, choose tile dimensions (width × height in map tiles), and send it to the server.
-- **Delete** — Remove images from the server.
-- **Refresh** — Reload the image list from the server.
+**📂 Upload Your Own Images**
+Open the Image Manager with `/ifc`, pick a PNG or JPG from your computer, choose how many map tiles wide and tall you want it, and send it straight to the server. No external tools needed.
 
-The server component stores uploaded images in `<server>/imageframeclient/images/` and optionally syncs them with the ImageFrame plugin's `plugins/ImageFrame/images/` directory for seamless integration.
+**💾 Smart Caching**
+Downloaded HD textures are saved to `imageframeclient/cache/` inside your game folder. Rejoin the server and they load instantly. Cache too big? Just delete the folder — it'll rebuild as needed.
 
-### Disk Cache
-Downloaded HD map textures are cached to disk in `<gameDir>/imageframeclient/cache/`. Cache is automatically used on reconnection — just delete the folder to clear it.
+**🌐 Server ↔ Client Sync**
+The mod talks to the ImageFrame plugin through NeoForge custom payloads. When images update on the server, your client follows along automatically.
 
-### High-Quality Image Scaling
-When images exceed the configured maximum resolution, bicubic interpolation (anti-aliased) is used instead of nearest-neighbor, producing significantly smoother downscaled results.
-
-### Multi-Language Support
-Fully translatable interface. Ships with English and Russian translations. Easily add your own language by creating a `lang/<code>.json` file.
-
-### Server Support Notification
-When joining a server with ImageFrame installed, a toast notification confirms HD images are available.
-
-### Configurable Performance
-Limit the maximum HD image resolution (128–4096px or native) to balance visual quality against GPU memory usage. Toggle map/painting previews and the server notification individually.
+**⚙️ Tweak to Your Liking**
+Set a max resolution cap (128–4096px or no limit) to save VRAM. Toggle map previews, disable the server notification — all in the mod's config screen.
 
 ---
 
-## Commands
+## 🔧 Quick Start
 
-| Command | Description | Side |
-|---|---|---|
-| `/ifc` | Opens the ImageFrame Manager GUI (upload, browse, delete images) | Client |
-
----
-
-## Configuration
-
-All options are client-side and accessible via the NeoForge mod settings screen or `config/imageframeclient-client.toml`:
-
-| Option | Default | Description |
-|---|---|---|
-| `useNativeResMapImages` | `true` | Enable HD full-color map images from the server |
-| `maxImageSize` | `NATIVE` | Maximum resolution cap (128, 256, 512, 1024, 2048, 4096, or NATIVE) |
-| `previewMapsInTooltip` | `true` | Show map previews in inventory tooltips |
-| `previewPaintingsInTooltip` | `true` | Show painting previews in inventory tooltips |
-| `notifyWhenServerSupports` | `true` | Show a toast on servers with ImageFrame |
+1. Install the mod on your client (NeoForge 1.21.1)
+2. Join a server that has the **ImageFrame** plugin installed
+3. That's it — HD maps work automatically. Try `/ifc` to upload your own images.
 
 ---
 
-## Building from Source
+## 📸 Screenshots
 
-```bash
-./gradlew build
-```
-
-The compiled JAR will be in `build/libs/`.
+*(Coming soon — in the meantime, check out the screenshots on [Modrinth](https://modrinth.com/mod/imageframeclient-reloaded))*
 
 ---
 
-## How It Works
+## 🎯 Commands
 
-This mod communicates with the ImageFrame server plugin via NeoForge custom payloads:
-
-- **Server → Client**: HD image data, multipart transfers, image map details, update signals
-- **Client → Server**: HD image requests, image map detail requests, image management (list/upload/delete)
-
-The management protocol allows the client GUI to list, upload, and delete images on the server, storing them in a format compatible with the ImageFrame plugin.
+| Command | What it does |
+|---|---|
+| `/ifc` | Open the Image Manager — browse, upload, and delete server images |
 
 ---
 
-## License
+## ⚡ Performance
 
-GPL-3.0. Originally by LOOHP, now maintained by Wakcedon.
+HD images can be memory-intensive on large map walls. Use the **Max Image Size** config option to cap resolution. The mod packs and scales images efficiently, and the disk cache means you're not re-downloading everything on every login.
+
+---
+
+## 📜 Credits
+
+Originally by **LOOHP** for Fabric. Forked and ported to NeoForge by **Wakcedon**.
+
+Built against [ImageFrame](https://github.com/LOOHP/ImageFrame) server plugin by LOOHP.
