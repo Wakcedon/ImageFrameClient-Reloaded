@@ -1,0 +1,22 @@
+{
+  "imageframeclient.config.useNativeResMapImages": "Использовать изображения в нативном разрешении и полном цвете",
+  "imageframeclient.config.maxImageSize": "Максимальное разрешение изображений",
+  "imageframeclient.config.previewMapsInTooltip": "Предпросмотр карт в подсказке",
+  "imageframeclient.config.previewPaintingsInTooltip": "Предпросмотр картин в подсказке",
+  "imageframeclient.config.notifyWhenServerSupports": "Уведомлять о поддержке ImageFrame на сервере",
+  "imageframeclient.message.server_supported.title": "Сервер поддерживает ImageFrame",
+  "imageframeclient.message.server_supported.description": "Этот сервер использует ImageFrame и будет показывать изображения в нативном разрешении и полном цвете!",
+  "imageframeclient.gui.title": "Управление ImageFrame",
+  "imageframeclient.gui.upload": "Загрузить",
+  "imageframeclient.gui.delete": "Удалить",
+  "imageframeclient.gui.refresh": "Обновить",
+  "imageframeclient.gui.close": "Закрыть",
+  "imageframeclient.gui.width": "Ширина",
+  "imageframeclient.gui.height": "Высота",
+  "imageframeclient.gui.loading": "Загрузка...",
+  "imageframeclient.gui.no_images": "Изображения ещё не загружены.\nНажмите «Загрузить», чтобы выбрать файл.",
+  "imageframeclient.gui.file_size": "Размер: %s",
+  "imageframeclient.gui.dimensions": "Тайлы: %s x %s",
+  "imageframeclient.gui.upload_hint": "Тайлы: укажите W и H (1-256)",
+  "imageframeclient.gui.tiles_label": "Тайлы (Ш x В):"
+}

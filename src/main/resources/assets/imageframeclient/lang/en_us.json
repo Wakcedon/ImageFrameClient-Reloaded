@@ -5,5 +5,18 @@
   "imageframeclient.config.previewPaintingsInTooltip": "Preview Paintings in Tooltip",
   "imageframeclient.config.notifyWhenServerSupports": "Notify when Server Supports ImageFrame Client",
   "imageframeclient.message.server_supported.title": "ImageFrame Client Supported Server",
-  "imageframeclient.message.server_supported.description": "This server has ImageFrame and will show images in native resolution and full color!"
+  "imageframeclient.message.server_supported.description": "This server has ImageFrame and will show images in native resolution and full color!",
+  "imageframeclient.gui.title": "ImageFrame Manager",
+  "imageframeclient.gui.upload": "Upload",
+  "imageframeclient.gui.delete": "Delete",
+  "imageframeclient.gui.refresh": "Refresh",
+  "imageframeclient.gui.close": "Close",
+  "imageframeclient.gui.width": "Width",
+  "imageframeclient.gui.height": "Height",
+  "imageframeclient.gui.loading": "Loading...",
+  "imageframeclient.gui.no_images": "No images uploaded yet.\nUpload an image using the Upload button.",
+  "imageframeclient.gui.file_size": "Size: %s",
+  "imageframeclient.gui.dimensions": "Tiles: %s x %s",
+  "imageframeclient.gui.upload_hint": "Tiles: use Width/Height fields (1-256)",
+  "imageframeclient.gui.tiles_label": "Tiles (W x H):"
 }
