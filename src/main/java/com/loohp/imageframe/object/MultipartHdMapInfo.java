@@ -44,7 +44,7 @@ public class MultipartHdMapInfo {
         int length = buffer.values().stream().mapToInt(b -> b.length).sum();
         ByteArrayOutputStream out = new ByteArrayOutputStream(length);
         for (int i = 0; i <= max; i++) {
-            out.writeBytes(buffer.getOrDefault(i, EMPTY_ARRAY));
+            out.write(buffer.getOrDefault(i, EMPTY_ARRAY));
         }
         return out.toByteArray();
     }
