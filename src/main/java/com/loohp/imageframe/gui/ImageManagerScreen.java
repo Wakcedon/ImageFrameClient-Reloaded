@@ -298,14 +298,23 @@ public class ImageManagerScreen extends Screen {
         images = List.of();
         ClientPayloadHandler.pendingImageList = null;
         lastRequestTime = System.currentTimeMillis();
-        PacketDistributor.sendToServer(new ServerboundImageListRequest());
+        try {
+            PacketDistributor.sendToServer(new ServerboundImageListRequest());
+        } catch (Exception e) {
+            loading = false;
+            statusMessage = "Server does not support image management";
+        }
     }
 
     private void deleteSelected() {
         if (selectedIndex < 0 || selectedIndex >= images.size()) return;
         String name = images.get(selectedIndex).name();
-        PacketDistributor.sendToServer(new ServerboundImageDelete(name));
-        refreshList();
+        try {
+            PacketDistributor.sendToServer(new ServerboundImageDelete(name));
+            refreshList();
+        } catch (Exception e) {
+            setStatus("Server does not support image management");
+        }
     }
 
     private void openFileChooser() {
@@ -369,9 +378,13 @@ public class ImageManagerScreen extends Screen {
             final String finalName = name;
             Minecraft mc = Minecraft.getInstance();
             mc.tell(() -> {
-                PacketDistributor.sendToServer(new ServerboundImageUpload(finalName, tilesW, tilesH, pngBytes));
-                refreshList();
-                setStatus("Uploading '" + finalName + "'...");
+                try {
+                    PacketDistributor.sendToServer(new ServerboundImageUpload(finalName, tilesW, tilesH, pngBytes));
+                    refreshList();
+                    setStatus("Uploading '" + finalName + "'...");
+                } catch (Exception e) {
+                    setStatus("Server does not support image management");
+                }
             });
 
             pendingImage = null;
