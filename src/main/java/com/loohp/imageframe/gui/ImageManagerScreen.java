@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,6 +52,12 @@ public class ImageManagerScreen extends Screen {
     private EditBox widthInput;
     private EditBox heightInput;
 
+    private BufferedImage pendingImage;
+    private String pendingFileName;
+    private int rotation;
+    private boolean flipH;
+    private boolean flipV;
+
     public ImageManagerScreen() {
         super(Component.translatable("imageframeclient.gui.title"));
     }
@@ -57,7 +65,6 @@ public class ImageManagerScreen extends Screen {
     @Override
     protected void init() {
         int listW = width * LIST_WIDTH_RATIO / 100;
-        int detailW = width - listW;
         int btnY = height - 30;
 
         uploadBtn = addRenderableWidget(Button.builder(
@@ -88,7 +95,28 @@ public class ImageManagerScreen extends Screen {
                 btn -> onClose()
         ).bounds(width - 70, btnY, 60, 20).build());
 
-        widthInput = addRenderableWidget(new EditBox(font, 290, btnY, 40, 20,
+        int editX = 390;
+        addRenderableWidget(Button.builder(
+                Component.literal("R"),
+                btn -> rotate90()
+        ).bounds(editX, btnY, 20, 20).build());
+
+        addRenderableWidget(Button.builder(
+                Component.literal("H"),
+                btn -> { flipH = !flipH; setStatus(flipH ? "Flipped H" : "Flip H off"); }
+        ).bounds(editX + 22, btnY, 20, 20).build());
+
+        addRenderableWidget(Button.builder(
+                Component.literal("V"),
+                btn -> { flipV = !flipV; setStatus(flipV ? "Flipped V" : "Flip V off"); }
+        ).bounds(editX + 44, btnY, 20, 20).build());
+
+        addRenderableWidget(Button.builder(
+                Component.literal("X"),
+                btn -> clearTransform()
+        ).bounds(editX + 66, btnY, 20, 20).build());
+
+        widthInput = addRenderableWidget(new EditBox(font, 250, btnY, 40, 20,
                 Component.translatable("imageframeclient.gui.width")));
         widthInput.setValue("1");
         widthInput.setFilter(s -> s.matches("\\d*") && (!s.isEmpty() && Integer.parseInt(s) <= 256));
@@ -101,12 +129,25 @@ public class ImageManagerScreen extends Screen {
         refreshList();
     }
 
+    private void rotate90() {
+        if (pendingImage != null) {
+            rotation = (rotation + 90) % 360;
+            setStatus("Rotation: " + rotation + "\u00B0");
+        }
+    }
+
+    private void clearTransform() {
+        rotation = 0;
+        flipH = false;
+        flipV = false;
+        setStatus("Transform reset");
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         renderBackground(graphics, mouseX, mouseY, delta);
 
         int listW = width * LIST_WIDTH_RATIO / 100;
-        int detailW = width - listW;
 
         graphics.fill(0, 0, listW, height - 35, 0x44000000);
 
@@ -121,13 +162,61 @@ public class ImageManagerScreen extends Screen {
         }
 
         if (selectedIndex >= 0 && selectedIndex < images.size()) {
-            renderImageDetail(graphics, listW + 10, 10, detailW - 20, mouseX, mouseY);
+            renderImageDetail(graphics, listW + 10, 10, width - listW - 20, mouseX, mouseY);
         }
 
         graphics.drawCenteredString(font, title, width / 2, 5, 0xFFFFFF);
         graphics.drawString(font, Component.translatable("imageframeclient.gui.tiles_label"), 235, btnLabelY(), 0xAAAAAA);
 
+        if (pendingImage != null) {
+            int previewX = listW + 10;
+            int previewY = 110;
+            int previewSize = Math.min(width - listW - 30, 128);
+            renderImagePreview(graphics, pendingImage, previewX, previewY, previewSize, mouseX, mouseY);
+            graphics.drawString(font, Component.literal("Preview: " + pendingFileName),
+                    previewX, previewY - 10, 0xAAAAAA);
+        }
+
         super.render(graphics, mouseX, mouseY, delta);
+    }
+
+    private void renderImagePreview(GuiGraphics graphics, BufferedImage image, int x, int y, int maxSize, int mx, int my) {
+        BufferedImage transformed = applyTransform(image);
+        int w = transformed.getWidth();
+        int h = transformed.getHeight();
+        float scale = Math.min((float) maxSize / w, (float) maxSize / h);
+        int sw = Math.round(w * scale);
+        int sh = Math.round(h * scale);
+        graphics.fill(x - 1, y - 1, x + maxSize + 1, y + maxSize + 1, 0xFF333333);
+        int px = x + (maxSize - sw) / 2;
+        int py = y + (maxSize - sh) / 2;
+        graphics.fill(px, py, px + sw, py + sh, 0xFFFFFFFF);
+        String dim = transformed.getWidth() + "x" + transformed.getHeight();
+        graphics.drawCenteredString(font, Component.literal(dim), px + sw / 2, py + sh / 2 - 4, 0xFF555555);
+    }
+
+    private BufferedImage applyTransform(BufferedImage src) {
+        if (src == null) return null;
+        BufferedImage img = src;
+        if (flipH || flipV || rotation != 0) {
+            int w = img.getWidth();
+            int h = img.getHeight();
+            boolean rotated = (rotation / 90) % 2 == 1;
+            int outW = rotated ? h : w;
+            int outH = rotated ? w : h;
+            BufferedImage out = new BufferedImage(outW, outH, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = out.createGraphics();
+            AffineTransform tx = new AffineTransform();
+            tx.translate(outW / 2.0, outH / 2.0);
+            tx.rotate(Math.toRadians(rotation));
+            if (flipH) tx.scale(-1, 1);
+            if (flipV) tx.scale(1, -1);
+            tx.translate(-w / 2.0, -h / 2.0);
+            g.drawImage(img, tx, null);
+            g.dispose();
+            img = out;
+        }
+        return img;
     }
 
     private int btnLabelY() {
@@ -142,7 +231,7 @@ public class ImageManagerScreen extends Screen {
         }
 
         int y = 20;
-        int itemH = 16;
+        int itemH = 20;
         for (int i = scrollOffset; i < images.size() && y + itemH < height - 35; i++) {
             ImageInfo info = images.get(i);
             boolean hovered = mouseX >= 0 && mouseX < listW && mouseY >= y && mouseY < y + itemH;
@@ -180,7 +269,7 @@ public class ImageManagerScreen extends Screen {
         if (button == 0) {
             int listW = width * LIST_WIDTH_RATIO / 100;
             int y = 20;
-            int itemH = 16;
+            int itemH = 20;
             for (int i = scrollOffset; i < images.size() && y + itemH < height - 35; i++) {
                 if (mouseX >= 0 && mouseX < listW && mouseY >= y && mouseY < y + itemH) {
                     selectedIndex = i;
@@ -195,8 +284,8 @@ public class ImageManagerScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (scrollY != 0) {
-            scrollOffset = Math.max(0, Math.min(scrollOffset - (int) Math.signum(scrollY), 
-                    Math.max(0, images.size() - (height - 35 - 20) / 16)));
+            scrollOffset = Math.max(0, Math.min(scrollOffset - (int) Math.signum(scrollY),
+                    Math.max(0, images.size() - (height - 35 - 20) / 20)));
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
@@ -223,7 +312,7 @@ public class ImageManagerScreen extends Screen {
         CompletableFuture.runAsync(() -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle("Select an image file");
-            chooser.setFileFilter(new FileNameExtensionFilter("Images (PNG, JPG, JPEG)", "png", "jpg", "jpeg"));
+            chooser.setFileFilter(new FileNameExtensionFilter("Images (PNG, JPG, JPEG, GIF)", "png", "jpg", "jpeg", "gif"));
             chooser.setAcceptAllFileFilterUsed(false);
             int result = chooser.showOpenDialog(null);
             if (result == JFileChooser.APPROVE_OPTION) {
@@ -235,38 +324,64 @@ public class ImageManagerScreen extends Screen {
 
     private void processSelectedFile(File file) {
         try {
-            byte[] rawBytes = Files.readAllBytes(file.toPath());
             BufferedImage bi = ImageIO.read(file);
             if (bi == null) {
                 setStatus("Unsupported image format");
                 return;
             }
-            NativeImage nativeImage = ImageUtil.fromBufferedImage(bi);
+            pendingImage = bi;
+            pendingFileName = file.getName();
+            rotation = 0;
+            flipH = false;
+            flipV = false;
+            setStatus("Loaded: " + pendingFileName + " (" + bi.getWidth() + "x" + bi.getHeight() + ")");
+        } catch (IOException e) {
+            LOGGER.error("Failed to read image file", e);
+            setStatus("Error: " + e.getMessage());
+        }
+    }
 
-            Minecraft mc = Minecraft.getInstance();
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (pendingImage != null && keyCode == 257) {
+            doUpload();
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private void doUpload() {
+        if (pendingImage == null) return;
+        try {
+            BufferedImage transformed = applyTransform(pendingImage);
+
             int tilesW = Math.max(1, Math.min(256, parseIntOrDefault(widthInput.getValue(), 1)));
             int tilesH = Math.max(1, Math.min(256, parseIntOrDefault(heightInput.getValue(), 1)));
-            final int finalW = tilesW;
-            final int finalH = tilesH;
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bi, "PNG", baos);
+            ImageIO.write(transformed, "PNG", baos);
             byte[] pngBytes = baos.toByteArray();
 
-            String name = file.getName().replaceAll("\\.(?i)(png|jpg|jpeg)$", "")
+            String name = pendingFileName.replaceAll("\\.(?i)(png|jpg|jpeg|gif)$", "")
                     .replaceAll("[^a-zA-Z0-9_\\-]", "_");
             if (name.length() > 64) name = name.substring(0, 64);
 
             final String finalName = name;
-            final byte[] finalPng = pngBytes;
+            Minecraft mc = Minecraft.getInstance();
             mc.tell(() -> {
-                PacketDistributor.sendToServer(new ServerboundImageUpload(finalName, finalW, finalH, finalPng));
+                PacketDistributor.sendToServer(new ServerboundImageUpload(finalName, tilesW, tilesH, pngBytes));
                 refreshList();
                 setStatus("Uploading '" + finalName + "'...");
             });
 
+            pendingImage = null;
+            pendingFileName = null;
+            rotation = 0;
+            flipH = false;
+            flipV = false;
+
         } catch (IOException e) {
-            LOGGER.error("Failed to read image file", e);
+            LOGGER.error("Failed to upload image", e);
             setStatus("Error: " + e.getMessage());
         }
     }

@@ -18,5 +18,11 @@
   "imageframeclient.gui.file_size": "Size: %s",
   "imageframeclient.gui.dimensions": "Tiles: %s x %s",
   "imageframeclient.gui.upload_hint": "Tiles: use Width/Height fields (1-256)",
-  "imageframeclient.gui.tiles_label": "Tiles (W x H):"
+  "imageframeclient.gui.tiles_label": "Tiles (W x H):",
+  "imageframeclient.gui.rot90": "R",
+  "imageframeclient.gui.flip_h": "H",
+  "imageframeclient.gui.flip_v": "V",
+  "imageframeclient.gui.reset": "X",
+  "imageframeclient.config.cacheTtlDays": "Cache TTL (days)",
+  "imageframeclient.config.cacheMaxMb": "Cache max size (MB)"
 }

@@ -8,23 +8,45 @@ Play on a server with the [ImageFrame](https://github.com/LOOHP/ImageFrame) plug
 
 ## ✨ What You Get
 
-**🎨 HD Maps — For Real This Time**
-Vanilla maps cap out at 128×128 and 16 colors. ImageFrame maps display in **full RGB** at the image's original resolution. Every pixel, every shade. Works in item frames, on map walls, in your hand — everywhere.
+### HD Native Resolution Map Rendering
+When the server sends full-color, high-resolution map data, the mod replaces the vanilla 128x128, 16-color map texture with the actual image at its native resolution. Works in item frames, on map walls, in hands — everywhere maps are rendered.
 
-**🖼️ Tooltip Previews**
-Hover over a filled map in your inventory — you'll see its actual content right in the tooltip. Same for ImageFrame multi-tile images and paintings.
+### GIF Animation Support
+Animated GIFs sent by the server are detected automatically and rendered as animated textures in-game using Java's built-in GIF parser.
 
-**📂 Upload Your Own Images**
-Open the Image Manager with `/ifc`, pick a PNG or JPG from your computer, choose how many map tiles wide and tall you want it, and send it straight to the server. No external tools needed.
+### Inventory Tooltip Previews
+- **Filled Maps** — See a live 64x64 preview of any filled map in your inventory.
+- **Image Maps** — For ImageFrame's multi-tile image items (paper with `CombinedImageMap` data), renders the full grid of map tiles in the tooltip at the correct scale.
+- **Paintings** — Preview a painting's artwork before placing it.
 
-**💾 Smart Caching**
-Downloaded HD textures are saved to `imageframeclient/cache/` inside your game folder. Rejoin the server and they load instantly. Cache too big? Just delete the folder — it'll rebuild as needed.
+### Image Manager GUI (`/ifc`)
+Opens a graphical interface for managing server images directly in-game:
+- **Browse** — View all uploaded images with names and file sizes.
+- **Upload** — Select a local PNG/JPG/GIF file via system file dialog, choose tile dimensions (width x height in map tiles), and send it to the server.
+- **Delete** — Remove images from the server.
+- **Refresh** — Reload the image list from the server.
+- **Transform** — Rotate 90, flip horizontally/vertically before uploading.
 
-**🌐 Server ↔ Client Sync**
+### Advanced Disk Cache
+Downloaded HD map textures are cached to disk in `<gameDir>/imageframeclient/cache/`.
+- **TTL-based expiration** — Old cache files are automatically cleaned up (configurable, default 7 days).
+- **Size limit** — Cache stops growing past a configurable limit (default 100 MB), deleting oldest files first.
+- Background cleanup runs periodically to keep things tidy.
+
+### High-Quality Image Scaling
+When images exceed the configured maximum resolution, bicubic interpolation (anti-aliased) is used instead of nearest-neighbor, producing significantly smoother downscaled results.
+
+### Per-Server Configuration
+Override mod settings per server — config changes on one server don't affect others. Overrides are stored in `<gameDir>/imageframeclient/server_overrides.json`.
+
+### Server ↔ Client Sync
 The mod talks to the ImageFrame plugin through NeoForge custom payloads. When images update on the server, your client follows along automatically.
 
-**⚙️ Tweak to Your Liking**
-Set a max resolution cap (128–4096px or no limit) to save VRAM. Toggle map previews, disable the server notification — all in the mod's config screen.
+### Multi-Language Support
+Fully translatable interface. Ships with English and Russian translations. Easily add your own language by creating a `lang/<code>.json` file.
+
+### Configurable Performance
+Limit the maximum HD image resolution (128-4096px or native) to balance visual quality against GPU memory usage. Toggle map/painting previews and the server notification individually. Fine-tune cache TTL and size limits.
 
 ---
 
@@ -38,7 +60,24 @@ Set a max resolution cap (128–4096px or no limit) to save VRAM. Toggle map pre
 
 ## 📸 Screenshots
 
-*(Coming soon — in the meantime, check out the screenshots on [Modrinth](https://modrinth.com/mod/imageframeclient-reloaded))*
+All options are client-side and accessible via the NeoForge mod settings screen or `config/imageframeclient-client.toml`:
+
+### General
+
+| Option | Default | Description |
+|---|---|---|
+| `useNativeResMapImages` | `true` | Enable HD full-color map images from the server |
+| `maxImageSize` | `NATIVE` | Maximum resolution cap (128, 256, 512, 1024, 2048, 4096, or NATIVE) |
+| `previewMapsInTooltip` | `true` | Show map previews in inventory tooltips |
+| `previewPaintingsInTooltip` | `true` | Show painting previews in inventory tooltips |
+| `notifyWhenServerSupports` | `true` | Show a toast on servers with ImageFrame |
+
+### Cache
+
+| Option | Default | Description |
+|---|---|---|
+| `cacheTtlDays` | `7` | Maximum days to keep cached HD textures (0 = forever) |
+| `cacheMaxMb` | `100` | Maximum cache size in MB (0 = unlimited) |
 
 ---
 
@@ -53,6 +92,15 @@ Set a max resolution cap (128–4096px or no limit) to save VRAM. Toggle map pre
 ## ⚡ Performance
 
 HD images can be memory-intensive on large map walls. Use the **Max Image Size** config option to cap resolution. The mod packs and scales images efficiently, and the disk cache means you're not re-downloading everything on every login.
+
+This mod communicates with the ImageFrame server plugin via NeoForge custom payloads:
+
+- **Server -> Client**: HD image data, multipart transfers, image map details, update signals
+- **Client -> Server**: HD image requests, image map detail requests, image management (list/upload/delete)
+
+The management protocol allows the client GUI to list, upload, and delete images on the server, storing them in a format compatible with the ImageFrame plugin.
+
+GIF images are detected by the client and animated via a client tick handler — no server-side changes needed.
 
 ---
 
