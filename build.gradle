@@ -37,6 +37,7 @@ processResources {
             mod_name: project.mod_name,
             mod_license: project.mod_license,
             mod_authors: project.mod_authors,
+            mod_description: project.mod_description,
     ]
     inputs.properties replaceProperties
 

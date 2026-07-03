@@ -135,7 +135,7 @@ public class ImageFrameClient {
             ClientPayloadHandler.register(event);
         }
 
-        var registrar = event.registrar("1");
+        var registrar = event.registrar("1").optional();
 
         registrar.playToServer(ServerboundAcknowledgement.TYPE, ServerboundAcknowledgement.STREAM_CODEC,
                 (payload, ctx) -> {});
