@@ -4,6 +4,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MultipartHdMapInfo {
@@ -43,8 +45,12 @@ public class MultipartHdMapInfo {
         int max = lastIndex.get();
         int length = buffer.values().stream().mapToInt(b -> b.length).sum();
         ByteArrayOutputStream out = new ByteArrayOutputStream(length);
-        for (int i = 0; i <= max; i++) {
-            out.write(buffer.getOrDefault(i, EMPTY_ARRAY));
+        try {
+            for (int i = 0; i <= max; i++) {
+                out.write(buffer.getOrDefault(i, EMPTY_ARRAY));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return out.toByteArray();
     }
