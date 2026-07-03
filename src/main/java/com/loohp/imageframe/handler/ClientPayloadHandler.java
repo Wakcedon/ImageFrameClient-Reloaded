@@ -1,6 +1,7 @@
 package com.loohp.imageframe.handler;
 
 import com.loohp.imageframe.payload.*;
+import com.loohp.imageframe.util.PayloadUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -20,28 +21,28 @@ public final class ClientPayloadHandler {
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1").optional();
 
-        registrar.playToClient(ClientboundAcknowledgement.TYPE, ClientboundAcknowledgement.STREAM_CODEC,
+        registrar.playToClient(ClientboundAcknowledgement.TYPE, PayloadUtil.lenient(ClientboundAcknowledgement.STREAM_CODEC),
                 ClientPayloadHandler::handleAcknowledgement);
 
-        registrar.playToClient(ClientboundHdImageResponse.TYPE, ClientboundHdImageResponse.STREAM_CODEC,
+        registrar.playToClient(ClientboundHdImageResponse.TYPE, PayloadUtil.lenient(ClientboundHdImageResponse.STREAM_CODEC),
                 ClientPayloadHandler::handleHdImageResponse);
 
-        registrar.playToClient(ClientboundHdImageMultipartResponse.TYPE, ClientboundHdImageMultipartResponse.STREAM_CODEC,
+        registrar.playToClient(ClientboundHdImageMultipartResponse.TYPE, PayloadUtil.lenient(ClientboundHdImageMultipartResponse.STREAM_CODEC),
                 ClientPayloadHandler::handleHdImageMultipart);
 
-        registrar.playToClient(ClientboundImageUpdatedSignal.TYPE, ClientboundImageUpdatedSignal.STREAM_CODEC,
+        registrar.playToClient(ClientboundImageUpdatedSignal.TYPE, PayloadUtil.lenient(ClientboundImageUpdatedSignal.STREAM_CODEC),
                 ClientPayloadHandler::handleImageUpdated);
 
-        registrar.playToClient(ClientboundImageMapDetailsResponse.TYPE, ClientboundImageMapDetailsResponse.STREAM_CODEC,
+        registrar.playToClient(ClientboundImageMapDetailsResponse.TYPE, PayloadUtil.lenient(ClientboundImageMapDetailsResponse.STREAM_CODEC),
                 ClientPayloadHandler::handleImageMapDetails);
 
-        registrar.playToClient(ClientboundImageListResponse.TYPE, ClientboundImageListResponse.STREAM_CODEC,
+        registrar.playToClient(ClientboundImageListResponse.TYPE, PayloadUtil.lenient(ClientboundImageListResponse.STREAM_CODEC),
                 ClientPayloadHandler::handleImageList);
 
-        registrar.playToClient(ClientboundImageUploadAck.TYPE, ClientboundImageUploadAck.STREAM_CODEC,
+        registrar.playToClient(ClientboundImageUploadAck.TYPE, PayloadUtil.lenient(ClientboundImageUploadAck.STREAM_CODEC),
                 ClientPayloadHandler::handleUploadAck);
 
-        registrar.playToClient(ClientboundImageDeleteAck.TYPE, ClientboundImageDeleteAck.STREAM_CODEC,
+        registrar.playToClient(ClientboundImageDeleteAck.TYPE, PayloadUtil.lenient(ClientboundImageDeleteAck.STREAM_CODEC),
                 ClientPayloadHandler::handleDeleteAck);
     }
 
