@@ -22,7 +22,7 @@ public final class ServerPayloadHandler {
     private static final String IMAGES_DIR = "imageframeclient" + java.io.File.separator + "images";
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar("1");
+        PayloadRegistrar registrar = event.registrar("1").optional();
 
         registrar.playToServer(ServerboundImageListRequest.TYPE, ServerboundImageListRequest.STREAM_CODEC,
                 ServerPayloadHandler::handleImageList);
