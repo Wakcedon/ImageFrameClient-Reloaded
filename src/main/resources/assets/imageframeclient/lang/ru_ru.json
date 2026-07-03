@@ -18,5 +18,11 @@
   "imageframeclient.gui.file_size": "Размер: %s",
   "imageframeclient.gui.dimensions": "Тайлы: %s x %s",
   "imageframeclient.gui.upload_hint": "Тайлы: укажите W и H (1-256)",
-  "imageframeclient.gui.tiles_label": "Тайлы (Ш x В):"
+  "imageframeclient.gui.tiles_label": "Тайлы (Ш x В):",
+  "imageframeclient.gui.rot90": "\u2191",
+  "imageframeclient.gui.flip_h": "\u2194",
+  "imageframeclient.gui.flip_v": "\u2195",
+  "imageframeclient.gui.reset": "\u2716",
+  "imageframeclient.config.cacheTtlDays": "Срок кэша (дни)",
+  "imageframeclient.config.cacheMaxMb": "Макс. размер кэша (МБ)"
 }
